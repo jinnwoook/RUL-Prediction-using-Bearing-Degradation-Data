@@ -74,10 +74,6 @@
 - **10분 주기**로 **10초씩** 데이터 취득
 - 테스트베드는 연속적으로 운전
 
-<div align="center">
-<img src="assets/data_acquisition_cycle.png" width="700" alt="Data Acquisition Cycle"/>
-</div>
-
 #### 시험 중단 조건과 데이터 특성
 - 베어링이 **중단 조건**에 도달하면 실험이 종료됨
 - 데이터 **측정 중** 고장 발생 시 → 고장 시점의 데이터가 **포함**
@@ -122,27 +118,13 @@
 ## 📁 디렉토리 구조
 
 ```
-📦 bearing/
-├── 📂 data/
-│   ├── 📂 Train Set/          # 학습용 TDMS 데이터
-│   ├── 📂 Validation Set/      # 검증용 TDMS 데이터
-│   └── 📂 submit/              # 제출 파일
-├── 📂 model_weights/
-│   └── 📜 best_model_0.66.pth  # 학습된 모델 가중치
-├── 📂 src/
-│   ├── 📂 preprocessing/       # 전처리 모듈
-│   │   ├── 📜 feature_extraction.py
-│   │   ├── 📜 signal_processing.py
-│   │   └── 📜 data_loader.py
-│   ├── 📂 models/              # 모델 정의
-│   ├── 📂 analysis/            # 분석 도구
-│   └── 📂 utils/               # 유틸리티
-├── 📂 notebooks/               # Jupyter 노트북
-├── 📂 configs/                 # 설정 파일
-├── 📜 웨이블릿 및 fft,Envelope파라미터 추출_LSTM최종.py
-├── 📜 KIST_베어링신의_제자들_code.ipynb
-├── 📜 STFT(고장 주파수).ipynb
-├── 📜 KIST 베어링 신의 제자들_report.pdf
+📦 RUL-Prediction-using-Bearing-Degradation-Data/
+├── 📜 웨이블릿 및 fft,Envelope파라미터 추출_LSTM최종.py  # 특징 추출 코드
+├── 📜 KIST_베어링신의_제자들_code.ipynb                  # 메인 코드
+├── 📜 STFT(고장 주파수).ipynb                           # 주파수 분석
+├── 📜 KIST 베어링 신의 제자들_report.pdf                # 보고서
+├── 📜 베어링 대회 순위.png                              # 대회 순위
+├── 📜 info.txt                                          # 정보
 └── 📜 README.md
 ```
 
@@ -252,25 +234,9 @@ with torch.no_grad():
 
 ## 🔧 방법론
 
-### Signal Processing Pipeline
-
-<div align="center">
-<img src="assets/signal_processing_pipeline.png" width="800" alt="Signal Processing Pipeline"/>
-</div>
-
-### CNN-LSTM Architecture
-
-<div align="center">
-<img src="assets/cnn_lstm_architecture.png" width="800" alt="CNN-LSTM Architecture"/>
-</div>
-
-### CNN-LSTM + BearLLM Ensemble Pipeline
+### CNN-LSTM + BearLLM Ensemble
 
 본 프로젝트에서는 CNN-LSTM 모델과 사전학습된 BearLLM을 앙상블하여 더욱 정확한 RUL 예측을 수행합니다.
-
-<div align="center">
-<img src="assets/ensemble_pipeline.png" width="800" alt="Ensemble Pipeline"/>
-</div>
 
 **앙상블 방식:**
 - **CNN-LSTM**: 초기 RUL 예측값 (`RUL_initial`) 생성
@@ -317,32 +283,7 @@ with torch.no_grad():
 
 ## 📝 Technical Report
 
-프로젝트의 상세한 기술 보고서입니다.
-
-<details>
-<summary><b>📄 기술 보고서 보기 (클릭하여 펼치기)</b></summary>
-
-<br>
-
-**📥 다운로드:** [논문_한국어.pdf](논문_한국어.pdf)
-
-**보고서 주요 내용:**
-- 신호처리 파이프라인 상세 설명
-- CNN-LSTM 모델 아키텍처 분석
-- BearLLM 앙상블 방법론
-- 실험 결과 및 분석
-- 향후 연구 방향
-
-| 섹션 | 내용 |
-|:---|:---|
-| 1. 서론 | 베어링 RUL 예측의 중요성 및 연구 배경 |
-| 2. 관련 연구 | 기존 방법론 분석 및 한계점 |
-| 3. 제안 방법 | CNN-LSTM + BearLLM 앙상블 아키텍처 |
-| 4. 실험 | 데이터셋, 전처리, 학습 설정 |
-| 5. 결과 | 성능 분석 및 비교 |
-| 6. 결론 | 요약 및 향후 연구 방향 |
-
-</details>
+**📄 보고서:** [KIST 베어링 신의 제자들_report.pdf](KIST%20베어링%20신의%20제자들_report.pdf)
 
 ---
 
