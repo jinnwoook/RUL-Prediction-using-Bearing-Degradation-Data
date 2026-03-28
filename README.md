@@ -38,7 +38,7 @@ TDMS 형식의 베어링 진동 신호를 ConV-LSTM에 입력해 잔여 수명(R
 
 BearLLM이 전체 진동 신호 시퀀스를 입력받아 **마지막 시퀀스의 Wear_rate(마모율)** 을 추정합니다. 이를 ConV-LSTM의 초기 예측값에 지수함수적으로 보정합니다:
 
-$$\text{RUL}_{\text{corrected}} = \text{RUL}_{\text{initial}} \times e^{\text{wear\_rate}}$$
+$$RUL_{corrected} = RUL_{initial} \times e^{wear\\_rate}$$
 
 **STEP 3 — 최종 앙상블**
 
@@ -292,7 +292,7 @@ with torch.no_grad():
 
 이를 활용해 ConV-LSTM의 초기 RUL 예측값을 지수함수적으로 보정합니다:
 
-$$\text{RUL}_{\text{corrected}} = \text{RUL}_{\text{initial}} \times e^{\text{wear\_rate}}$$
+$$RUL_{corrected} = RUL_{initial} \times e^{wear\\_rate}$$
 
 - `wear_rate > 0`: 마모가 빠르게 진행 중 → RUL 상향 보정 (아직 수명이 남음)
 - `wear_rate < 0`: 급격한 열화 → RUL 하향 보정 (조기 고장 위험)
