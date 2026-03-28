@@ -26,6 +26,33 @@
 
 ---
 
+### 🔍 파이프라인 방법론
+
+본 프로젝트는 **두 개의 ConV-LSTM 브랜치**와 **BearLLM**을 결합한 3단계 앙상블 예측 파이프라인을 사용합니다.
+
+**STEP 1 — ConV-LSTM 기반 RUL 초기 예측**
+
+TDMS 형식의 베어링 진동 신호를 ConV-LSTM에 입력해 잔여 수명(RUL) 초기값을 예측합니다. Conv1D로 진동 파형의 결함 패턴(충격 임펄스, 주파수 특징)을 추출하고, LSTM으로 시간축 열화 추이를 학습합니다. 서로 다른 시점의 신호를 처리하는 **두 개의 독립 브랜치**로 구성됩니다.
+
+**STEP 2 — BearLLM 마모율 추정 및 RUL 보정**
+
+BearLLM이 전체 진동 신호 시퀀스를 입력받아 **마지막 시퀀스의 Wear_rate(마모율)** 을 추정합니다. 이를 ConV-LSTM의 초기 예측값에 지수함수적으로 보정합니다:
+
+$$\text{RUL}_{\text{corrected}} = \text{RUL}_{\text{initial}} \times e^{\text{wear\_rate}}$$
+
+**STEP 3 — 최종 앙상블**
+
+BearLLM으로 보정된 RUL과 두 번째 ConV-LSTM 브랜치의 RUL을 앙상블하여 **최종 RUL**을 산출합니다.
+
+| 구성요소 | 역할 |
+|:---|:---|
+| ConV-LSTM Branch 1 | 초기 시점 진동 신호 → 1차 RUL 예측 |
+| BearLLM | 마모율 추정 → 지수 보정 적용 |
+| ConV-LSTM Branch 2 | 최근 시점 진동 신호 → 2차 RUL 예측 |
+| Ensemble | 보정 RUL + Branch 2 RUL → **최종 RUL** |
+
+---
+
 ## 📋 목차
 
 - [프로젝트 소개](#-프로젝트-소개)
