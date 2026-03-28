@@ -16,6 +16,12 @@
 
 <img src="베어링 대회 순위.png" width="600" alt="Competition Ranking"/>
 
+<br>
+
+### 예측 파이프라인
+
+<img src="pipeline.png" width="750" alt="Prediction Pipeline"/>
+
 </div>
 
 ---
@@ -119,9 +125,12 @@
 
 ```
 📦 RUL-Prediction-using-Bearing-Degradation-Data/
+├── 📜 Bearing(KIST_베어링_신_제자들).ipynb              # 전처리 및 EDA 코드
+├── 📜 Bearing(KIST_베어링_신_제자들)_modeling_ver.ipynb # 모델링 및 앙상블 코드
+├── 📜 KIST_베어링신의_제자들_code.ipynb                  # 메인 통합 코드
 ├── 📜 웨이블릿 및 fft,Envelope파라미터 추출_LSTM최종.py  # 특징 추출 코드
-├── 📜 KIST_베어링신의_제자들_code.ipynb                  # 메인 코드
 ├── 📜 STFT(고장 주파수).ipynb                           # 주파수 분석
+├── 📜 pipeline.png                                      # 예측 파이프라인 다이어그램
 ├── 📜 KIST 베어링 신의 제자들_report.pdf                # 보고서
 ├── 📜 베어링 대회 순위.png                              # 대회 순위
 ├── 📜 info.txt                                          # 정보
@@ -234,16 +243,49 @@ with torch.no_grad():
 
 ## 🔧 방법론
 
-### CNN-LSTM + BearLLM Ensemble
+### ConV-LSTM + BearLLM 앙상블 파이프라인
 
-본 프로젝트에서는 CNN-LSTM 모델과 사전학습된 BearLLM을 앙상블하여 더욱 정확한 RUL 예측을 수행합니다.
+본 프로젝트의 핵심은 **두 개의 ConV-LSTM 브랜치**와 **BearLLM**을 결합한 3단계 앙상블 예측 파이프라인입니다.
 
-**앙상블 방식:**
-- **CNN-LSTM**: 초기 RUL 예측값 (`RUL_initial`) 생성
-- **BearLLM**: 마모율 (Wear Rate) 추정
-- **RUL 보정**: `RUL_corrected = RUL_initial × e^(wear_rate)`
+---
 
-### Feature Extraction Details
+#### STEP 1. ConV-LSTM 기반 RUL 초기 예측
+
+베어링 진동 센서에서 수집된 **TDMS 형식의 시계열 신호**를 ConV-LSTM 모델에 입력해 잔여 수명(RUL) 초기값을 예측합니다.
+
+- **Conv1D**: 진동 파형에서 결함 관련 지역 특징(주파수 패턴, 충격 임펄스) 추출
+- **LSTM**: 시간 순서에 따른 열화 추이를 학습해 장기 의존성 모델링
+- 서로 다른 시점의 진동 신호를 처리하는 **두 개의 독립 브랜치**로 구성
+
+---
+
+#### STEP 2. BearLLM 기반 마모율(Wear Rate) 추정 및 RUL 보정
+
+**BearLLM**은 전체 진동 신호 시퀀스를 입력받아 **마지막 시퀀스의 Wear_rate(마모율)** 을 추정합니다.
+
+이를 활용해 ConV-LSTM의 초기 RUL 예측값을 지수함수적으로 보정합니다:
+
+$$\text{RUL}_{\text{corrected}} = \text{RUL}_{\text{initial}} \times e^{\text{wear\_rate}}$$
+
+- `wear_rate > 0`: 마모가 빠르게 진행 중 → RUL 상향 보정 (아직 수명이 남음)
+- `wear_rate < 0`: 급격한 열화 → RUL 하향 보정 (조기 고장 위험)
+
+---
+
+#### STEP 3. 최종 앙상블
+
+BearLLM으로 보정된 RUL과 두 번째 ConV-LSTM 브랜치의 RUL 예측값을 **앙상블(평균)** 하여 최종 RUL을 산출합니다.
+
+| 구성요소 | 역할 |
+|:---|:---|
+| **ConV-LSTM (Branch 1)** | 초기 시점 진동 신호 → 1차 RUL 예측 |
+| **BearLLM** | 전체 시퀀스 마모율 추정 → 지수 보정 적용 |
+| **ConV-LSTM (Branch 2)** | 최근 시점 진동 신호 → 2차 RUL 예측 |
+| **Ensemble** | BearLLM 보정 RUL + Branch 2 RUL → **최종 RUL** |
+
+---
+
+### 특징 추출 (Feature Extraction)
 
 | 특징 | 설명 | 물리적 의미 |
 |:---|:---|:---|
